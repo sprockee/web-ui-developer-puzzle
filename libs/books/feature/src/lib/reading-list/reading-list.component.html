@@ -4,17 +4,30 @@
       <img class="reading-list-item--cover" [src]="b.coverUrl" alt="" />
     </div>
     <div class="reading-list-item--details">
-      <strong class="reading-list-item--details--title">{{ b.title }}</strong>
-      <div class="reading-list-item--details--author">
-        {{ b.authors.join(',') }}
+      <div [ngClass]="{'is-marked-as-read': b.finished}">
+        <strong class="reading-list-item--details--title">{{ b.title }}</strong>
+        <div class="reading-list-item--details--author">
+          {{ b.authors.join(',') }}
+        </div>
+     </div>
+      <div class="finished-on-date" *ngIf="b.finished">
+        Marked as read on: {{ b.finishedDate | date }}
       </div>
     </div>
+    <button mat-icon-button *ngIf="!b.finished" (click)="markAsRead(b)"
+      [attr.aria-label]="'Mark ' + b.title + ' as read'"
+      [matTooltip]="'Mark ' + b.title + ' as read'" 
+      data-testing="book-read-button">
+      <mat-icon class="mark-as-read">check_circle</mat-icon>
+    </button>
     <div>
       <button
         mat-icon-button
         color="warn"
         [attr.aria-label]="'Remove ' + b.title + ' from reading list'"
+        [matTooltip]="'Remove ' + b.title + ' from reading list'"
         (click)="removeFromReadingList(b)"
+        [attr.data-testing]="b.finished ? 'remove-finished-book' : 'remove-book-button'"
       >
         <mat-icon>remove_circle</mat-icon>
       </button>

@@ -4,7 +4,7 @@ import { provideMockActions } from '@ngrx/effects/testing';
 import { provideMockStore } from '@ngrx/store/testing';
 import { HttpTestingController } from '@angular/common/http/testing';
 
-import { SharedTestingModule } from '@tmo/shared/testing';
+import { createReadingListItem, SharedTestingModule } from '@tmo/shared/testing';
 import { ReadingListEffects } from './reading-list.effects';
 import * as ReadingListActions from './reading-list.actions';
 
@@ -40,6 +40,51 @@ describe('ToReadEffects', () => {
       });
 
       httpMock.expectOne('/api/reading-list').flush([]);
+    });
+  });
+
+  describe('finishedReading$', () => {
+    it('should mark the book as read on the given date', done => {
+      const readingListItem = createReadingListItem('A');
+      const finishedDate = new Date().toISOString();
+      actions = new ReplaySubject();
+      actions.next(
+        ReadingListActions.markedAsRead({ item: readingListItem, finishedDate })
+      );
+      effects.finishedReading$.subscribe(action => {
+        expect(action).toEqual(ReadingListActions.confirmedToMarkAsRead());
+        done();
+      });
+      httpMock
+        .expectOne(`/api/reading-list/${readingListItem.bookId}/finished`)
+        .flush({});
+    });
+
+    it('should not mark the book as read due to API server issues', (done) => {
+      const readingListItem = createReadingListItem('B');
+      const finishedDate = new Date().toISOString();
+
+      actions = new ReplaySubject();
+      actions.next(
+        ReadingListActions.markedAsRead({
+          item: readingListItem,
+          finishedDate,
+        })
+      );
+
+      effects.finishedReading$.subscribe((action) => {
+        expect(action).toEqual(
+          ReadingListActions.failedToMarkAsRead({
+            item: readingListItem,
+            finishedDate: '',
+          })
+        );
+        done();
+      });
+
+      httpMock
+        .expectOne(`/api/reading-list/${readingListItem.bookId}/finished`)
+        .flush({}, { status: 403, statusText: 'Forbidden' });
     });
   });
 });

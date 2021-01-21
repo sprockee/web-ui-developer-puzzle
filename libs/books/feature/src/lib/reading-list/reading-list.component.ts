@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { getReadingList, removeFromReadingList } from '@tmo/books/data-access';
+import { getReadingList, markedAsRead, removeFromReadingList } from '@tmo/books/data-access';
+import { ReadingListItem } from '@tmo/shared/models';
 
 @Component({
   selector: 'tmo-reading-list',
@@ -12,7 +13,11 @@ export class ReadingListComponent {
 
   constructor(private readonly store: Store) {}
 
-  removeFromReadingList(item) {
+  removeFromReadingList(item: ReadingListItem): void {
     this.store.dispatch(removeFromReadingList({ item }));
+  }
+
+  markAsRead(item: ReadingListItem): void {
+    this.store.dispatch(markedAsRead({ item, finishedDate: new Date().toISOString() }));
   }
 }

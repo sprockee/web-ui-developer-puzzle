@@ -36,6 +36,8 @@
               color="primary"
               (click)="addBookToReadingList(book)"
               [disabled]="book.isAdded"
+              data-testing="want-to-read-btn"
+              [innerText]="book.finished ? 'Finished' : 'Want to Read'"
             >
               Want to Read
             </button>
