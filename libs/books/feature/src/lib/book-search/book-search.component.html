@@ -7,35 +7,35 @@
       placeholder="Search for books to add to your reading list"
       formControlName="term"
     />
-    <button mat-icon-button matSuffix>
+    <button mat-icon-button matSuffix aria-label="search">
       <mat-icon>search</mat-icon>
     </button>
   </mat-form-field>
 </form>
 
 <ng-container *ngIf="searchTerm; else empty">
-  <div class="book-grid">
-    <div class="book" data-testing="book-item" *ngFor="let b of books">
+  <div class="book-grid" *ngIf="(books$ | async).length; else loader">
+    <div class="book" data-testing="book-item" *ngFor="let book of books$ | async" [attr.aria-label]="book.title" tabindex="0">
       <div class="book--title">
-        {{ b.title }}
+        {{ book.title }}
       </div>
       <div class="book--content">
         <div class="book--content--cover">
-          <img src="{{ b.coverUrl }}" />
+          <img src="{{ book.coverUrl }}" alt="" />
         </div>
         <div class="book--content--info">
-          <div><strong>Author:</strong> {{ b.authors.join(',') }}</div>
-          <div><strong>Publisher:</strong> {{ b.publisher }}</div>
+          <div><strong>Author:</strong> {{ book.authors.join(',') }}</div>
+          <div><strong>Publisher:</strong> {{ book.publisher }}</div>
           <div>
-            <strong>Published:</strong> {{ formatDate(b.publishedDate) }}
+            <strong>Published:</strong> {{ book.publishedDate | date: 'M/d/yyyy' }}
           </div>
-          <p [innerHTML]="b.description"></p>
+          <p [innerHTML]="book.description"></p>
           <div>
             <button
               mat-flat-button
               color="primary"
-              (click)="addBookToReadingList(b)"
-              [disabled]="b.isAdded"
+              (click)="addBookToReadingList(book)"
+              [disabled]="book.isAdded"
             >
               Want to Read
             </button>
@@ -45,12 +45,18 @@
     </div>
   </div>
 </ng-container>
+
+<ng-template #loader>
+  <div class="loader">
+    <mat-spinner></mat-spinner>
+  </div>
+</ng-template>
+
 <ng-template #empty>
   <div class="empty">
     <p>
-      Try searching for a topic, for example "<a (click)="searchExample()"
-        >JavaScript</a
-      >".
+      Try searching for a topic, for example "<span role="button" class="default--search" (click)="searchExample()"
+        >JavaScript</span>".
     </p>
   </div>
 </ng-template>

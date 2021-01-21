@@ -68,5 +68,21 @@ form {
   justify-content: center;
   min-height: 50vh;
   font-size: 1.5rem;
-  color: $gray40;
+  color: $black;
+
+  .default--search {
+    color: $magenta;
+    cursor: pointer;
+    &:hover {
+      color: $pink-accent;
+    }
+  }
+}
+
+.loader {
+  display: flex;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
 }

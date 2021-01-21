@@ -7,8 +7,8 @@ describe('When: Use the search feature', () => {
       ExpectedConditions.textToBePresentInElement($('tmo-root'), 'okreads')
     );
 
-    const form = await $('form');
-    const input = await $('input[type="search"]');
+    const form = $('form');
+    const input = $('input[type="search"]');
     await input.sendKeys('javascript');
     await form.submit();
 
