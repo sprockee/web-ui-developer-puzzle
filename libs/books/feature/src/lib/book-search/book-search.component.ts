@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import {
   addToReadingList,
@@ -10,23 +10,40 @@ import {
 import { FormBuilder } from '@angular/forms';
 import { Book } from '@tmo/shared/models';
 import { Observable } from 'rxjs/internal/Observable';
+import { Subject } from 'rxjs/internal/Subject';
+import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/internal/operators';
 
 @Component({
   selector: 'tmo-book-search',
   templateUrl: './book-search.component.html',
   styleUrls: ['./book-search.component.scss']
 })
-export class BookSearchComponent {
+export class BookSearchComponent implements OnInit, OnDestroy {
   books$: Observable<ReadingListBook[]> = this.store.select(getAllBooks);
 
   searchForm = this.fb.group({
     term: ''
   });
 
+  private ngDeregister = new Subject<boolean> ();
+
   constructor(
     private readonly store: Store,
     private readonly fb: FormBuilder
   ) {}
+
+  ngOnInit(): void {
+    this.searchForm.get('term').valueChanges.pipe(
+      debounceTime(500), 
+      distinctUntilChanged(),
+      takeUntil(this.ngDeregister))
+      .subscribe(() => this.searchBooks());
+  }
+
+  ngOnDestroy(): void {
+    this.ngDeregister.next();
+    this.ngDeregister.complete();
+  }
 
   get searchTerm(): string {
     return this.searchForm.value.term;
@@ -38,7 +55,6 @@ export class BookSearchComponent {
 
   searchExample() {
     this.searchForm.controls.term.setValue('javascript');
-    this.searchBooks();
   }
 
   searchBooks() {
