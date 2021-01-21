@@ -1,14 +1,15 @@
-import { $, browser, ExpectedConditions } from 'protractor';
+import { $, $$, browser, By, ExpectedConditions } from 'protractor';
 
 describe('When: I use the reading list feature', () => {
-  it('Then: I should see my reading list', async () => {
+  beforeEach(async () => {
     await browser.get('/');
     await browser.wait(
       ExpectedConditions.textToBePresentInElement($('tmo-root'), 'okreads')
     );
+  });
 
-    const readingListToggle = await $('[data-testing="toggle-reading-list"]');
-    await readingListToggle.click();
+  it('Then: I should see my reading list', async () => {
+    await $('[data-testing="toggle-reading-list"]').click();
 
     await browser.wait(
       ExpectedConditions.textToBePresentInElement(
@@ -16,5 +17,39 @@ describe('When: I use the reading list feature', () => {
         'My Reading List'
       )
     );
+  });
+
+  it('Then: I should be able to UNDO adding a book to my reading list', async () => {
+    await $('input[type="search"]').sendKeys('head first');
+    await $('form').submit();
+
+    await $('[data-testing="toggle-reading-list"]').click();
+    const initialReadingListCount  = await $$('.reading-list-item');
+    await $('[data-testing="close-reading-list"]').click();
+
+    await $$('[data-testing="want-to-read-btn"]').first().click();
+
+    await browser.driver.findElement(By.className('mat-simple-snackbar-action')).click();
+
+    await $('[data-testing="toggle-reading-list"]').click();
+
+    const finalReadingListCount = await $$('.reading-list-item');
+    expect(finalReadingListCount.length).toEqual(initialReadingListCount.length);
+  });
+
+  it('Then: I should be able to UNDO removing a book from my reading list', async () => {
+    await $('input[type="search"]').sendKeys('head first');
+    await $('form').submit();
+
+    await $$('[data-testing="want-to-read-btn"]').first().click();
+
+    await $('[data-testing="toggle-reading-list"]').click();
+    const initialReadingListCount = await $$('.reading-list-item');
+
+    await $('tmo-reading-list button').click();
+    await browser.driver.findElement(By.className('mat-simple-snackbar-action')).click();
+    
+    const finalReadingListCount = await $$('.reading-list-item');
+    expect(finalReadingListCount.length).toEqual(initialReadingListCount.length);
   });
 });
